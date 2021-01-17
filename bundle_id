@@ -1,0 +1,3 @@
+#!/bin/bash
+
+osascript -e "id of app \"$1\"" 

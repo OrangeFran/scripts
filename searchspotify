@@ -1,0 +1,10 @@
+#!/bin/zsh
+
+SONG=$(osascript -e 'set theString to text returned of (display dialog "What do you want to play?" default answer "" buttons {"Play","Cancel"} default button 1)')
+
+# Check if input failed
+if [[ "$#" != "0" ]]; then
+    exit $#
+fi
+
+$HOME/.cargo/bin/spt play --name="$SONG" --track

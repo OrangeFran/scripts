@@ -1,0 +1,63 @@
+#!/bin/bash
+
+fallback() {
+    FILE="/usr/local/etc/openvpn/client.conf"
+    FALLBACK="185.236.201.131"
+    echo "Using fallback station ($FALLBACK) over udp ..."
+    sudo openvpn --remote $FALLBACK 1194 --proto "udp" --config $FILE --daemon &
+    sleep 2
+}
+
+connect() {
+    FILE="/usr/local/etc/openvpn/client.conf"
+    # Get a list of all countries and let user choose
+    COUNTRY=$(curl --silent "https://api.nordvpn.com/v1/servers/countries" | jq '.[] | .id, .name' | tr -d '"' | sed 'N;s/\n/ /' | fzf | awk '{ print $1 }')
+    if [[ "$COUNTRY" == "" ]]; then
+        echo "Aborting ..."
+        exit 1
+    fi
+    # Get the name of the nearest server
+    SERVER=$(curl --silent "https://api.nordvpn.com/v1/servers/recommendations?filters\[country_id\]=$COUNTRY&limit=1")
+    NAME=$(echo "$SERVER" | jq '.[] .hostname' | tr -d '"')
+    STATION=$(echo "$SERVER" | jq '.[] .station' | tr -d '"')
+
+    if [[ "$1" == "443" ]]; then
+        PROTO="tcp"
+    else
+        PROTO="udp"
+    fi
+
+    echo "Killing existing connections ..."
+    sudo killall openvpn
+    echo "Connecting to $NAME ($STATION) over $PROTO ..."
+    sudo openvpn --remote $STATION $1 --proto $PROTO --config $FILE --daemon &
+    echo "$SERVER" > /tmp/nvpn_stats
+    sleep 2
+}
+
+stat() {
+    info=$(cat /tmp/nvpn_stats)
+
+    if [[ -n "$(pgrep openvpn)" ]] && [[ -n "$info" ]]; then
+        NAME=$(echo "$info" | jq '.[] .hostname' | tr -d '"')
+        STATION=$(echo "$info" | jq '.[] .station' | tr -d '"')
+        COUNTRY=$(echo "$info" | jq '.[] .locations | .[] .country.name' | tr -d '"')
+        echo "in $COUNTRY ($STATION -> $NAME)"
+    else
+        echo "Nope!"
+    fi
+
+    exit 0
+}
+
+case "$1" in
+    "s" | "stat") stat;;
+    "f" | "fallback") fallback;;
+    "k" | "kill") sudo killall openvpn;;
+    "u" | "udp") connect 1194;;
+    *) connect 443;;
+esac
+
+# Refresh the bitbar plugin
+echo "Refreshing plugin ..."
+open -g "bitbar://refreshPlugin?name=nvpn.sh"

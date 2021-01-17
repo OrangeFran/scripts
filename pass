@@ -1,0 +1,2 @@
+#!/bin/bash
+op list items --categories Login | jq '.[] | .overview.title' | tr -d \" | fzf | op get item - --fields password | pbcopy
