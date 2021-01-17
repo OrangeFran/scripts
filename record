@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 help() {
-    echo "=> record [--screen] [--title TITLE] OUTPUT"
+    echo "Usage: record [--screen] [--title TITLE] OUTPUT"
     echo "You can specify the output format with the file extension."
     exit 1
 }

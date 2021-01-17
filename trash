@@ -1,4 +1,0 @@
-#!/bin/bash
-
-# just like rm, but saver
-mv "$@" ~/.Trash

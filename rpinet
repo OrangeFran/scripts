@@ -1,9 +1,0 @@
-#!/bin/bash
-
-# create the bridge
-BRIDGE=$(sudo ifconfig bridge create)
-
-# add if
-sudo ifconfig $BRIDGE addm en0 addm en8 up
-sudo ifconfig en0 up
-sudo ifconfig en8 up
