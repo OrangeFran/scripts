@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if [[ "$1" == /* ]]; then
+    url="file://$1"
+else
+    url="file://$(pwd)/$1"
+fi
+
+echo "Using this link: $url ..."
+/Applications/terminal-share.app/Contents/MacOS/terminal-share -service "message" -url "$url"

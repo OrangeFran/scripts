@@ -1,0 +1,30 @@
+#!/bin/bash
+
+picture="$1"
+color="#1d2021"
+height=65
+
+if [[ ! -n "$1" ]]; then
+    echo "No file provided."
+    echo "Usage: ./topbar /path/to/picture"
+    exit 1
+fi
+
+if [[ ! -f "$picture" ]]; then
+    echo "The file does not exist."
+    exit 1
+fi
+
+# Get the width of the initial image
+width=$(identify $picture | awk '{print $3}' | cut -d x -f 1)
+
+echo "Creating a rectangle (${width}x$height) ..."
+
+# Create the image to /tmp
+convert -size "${width}x${height}" "xc:$color" /tmp/out.png
+
+# Add the two images together
+echo "Appending the two images ..."
+convert /tmp/out.png $picture -append res.png
+
+echo "You can find the new image here: ./res.png"
