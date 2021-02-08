@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
 
 echo "Welcome! Let's bild you derivation!"
-echo -n "What do you want to call your derivation? " && read NAME && echo
-echo -n "Where can I find the dmg file? " && read LOCATION && echo
+echo -n -e "\e[36m> What do you want to call your derivation?\e[0m " && read NAME
+echo -n -e "\e[36m> Where can I find the dmg file?\e[0m " && read LOCATION
 
 # Get the sha256
 SHA=$(nix-prefetch-url "$LOCATION")

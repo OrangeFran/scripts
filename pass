@@ -1,3 +1,11 @@
-#! /usr/bin/env bash
+#! /usr/bin/env fish
 
-op list items --categories Login | jq '.[] | .overview.title' | tr -d \" | fzf | op get item - --fields password | pbcopy
+# Test if signed in
+op list users 2> /dev/null
+
+while [ $status = 1 ]
+    eval (op signin my)
+end
+
+op list items --categories Login | jq '.[] | .overview.title' \
+    | tr -d \" | fzf | op get item - --fields password | pbcopy
