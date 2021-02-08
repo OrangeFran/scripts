@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 picture="$1"
 color="#1d2021"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /usr/bin/env bash
 
 STUNPORT=19302
 STUNSERVER="stun1.l.google.com"

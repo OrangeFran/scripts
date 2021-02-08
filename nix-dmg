@@ -1,0 +1,36 @@
+#! /usr/bin/env bash
+
+echo "Welcome! Let's bild you derivation!"
+echo -n "What do you want to call your derivation? " && read NAME && echo
+echo -n "Where can I find the dmg file? " && read LOCATION && echo
+
+# Get the sha256
+SHA=$(nix-prefetch-url "$LOCATION")
+
+# The temporary output file
+OUT_FILE="/tmp/$SHA-$NAME.nix"
+
+cat <<EOF >> /tmp/$SHA-derivation.nix
+{ pkgs ? import <nixpkgs> {}, ... }:
+stdenv.mkDerivation rec {
+  name = "$NAME";
+  buildInputs = [ undmg ];
+  sourceRoot = ".";
+  phases = [ "unpackPhase" "installPhase" ];
+
+  # Just move the .app folder to local Applications
+  installPhase = ''
+    mkdir -p "\$out/Applications"
+    cp -r Firefox.app "\$out/Applications"
+  '';
+
+  src = fetchurl {
+    name = "\${name}.dmg";
+    url = "$LOCATION";
+    sha256 = "$SHA";
+  };
+}
+EOF
+
+echo "The derivation was generated to $OUT_FILE!"
+echo "Install it with \`nix-env -i -f $OUT_FILE\` or move it to your derivations folder."
