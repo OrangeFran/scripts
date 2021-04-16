@@ -1,0 +1,3 @@
+#! /usr/bin/env bash
+
+curl -s 'ipinfo.io' | jq '.ip' | tr -d '"'
