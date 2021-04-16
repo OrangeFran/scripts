@@ -1,0 +1,65 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i python3 -p python3Packages.requests python3Packages.matplotlib python3Packages.cartopy
+# vim:filetype=python
+
+import sys, json
+import requests as req
+from argparse import ArgumentParser
+
+import cartopy
+import cartopy.crs as ccrs
+import cartopy.feature as cf
+import matplotlib.pyplot as plt
+
+class InvalidIP(Exception):
+    pass
+
+def stat(string):
+    print(string + "\r", end="")
+
+def lookup(ip):
+    # Sends json back in the following shape
+    # {
+    #   "ip": "103.110.20.206",
+    #   "city": "Delhi",
+    #   "region": "Delhi",
+    #   "country": "IN",
+    #   "loc": "28.6519,77.2315",
+    #   "org": "AS133275 Gigantic Infotel Pvt Ltd",
+    #   "postal": "110001",
+    #   "timezone": "Asia/Kolkata"
+    # }
+    stat("Asking ipinfo.org ...") 
+    resp = req.get("http://ipinfo.org/{}".format(ip))
+    if resp.status_code != 200:
+        print("'{}' is not a valid ip".format(ip), file=sys.stderr)
+        sys.exit(0)
+    return json.loads(resp.text)
+
+# Visualize the data with cartopy
+# Create a point for the passed in coordinates
+def plot(xy, name):
+    # Transform xy ( "x,y" to (x, y) )
+    splitted = xy.split(",")
+    xy = (float(splitted[0]), float(splitted[1]))
+    ax.annotate(name, xy=xy, color="red")
+
+parser = ArgumentParser()
+# Multiple IPs can be specified by seperating them with a \n (newline)
+parser.add_argument("ips", type=str, help="the IP addresses to look up", default=sys.stdin)
+args = parser.parse_args()
+
+# Set up the map
+stat("Mapping ...")
+ax = plt.axes(projection=ccrs.Mercator())
+ax.add_feature(cf.COASTLINE)
+ax.set_title("Worl map")
+
+for ip in args.ips.split("\n"):
+    stat("Plotting ...")
+    plot(lookup(ip)["loc"], "!")
+
+stat("Saving map ...")
+plt.savefig("map.png")
+
+

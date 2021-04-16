@@ -1,8 +1,13 @@
 #! /usr/bin/env bash
 
 picture="$1"
-color="#1d2021"
-height=65
+color="#3c414c"
+
+if [[ -n "$2" ]]; then
+    height=$2
+else
+    height=65
+fi
 
 if [[ ! -n "$1" ]]; then
     echo "No file provided."
