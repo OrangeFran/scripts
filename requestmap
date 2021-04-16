@@ -15,7 +15,7 @@ class InvalidIP(Exception):
     pass
 
 def stat(string):
-    print(string + "\r", end="")
+    print(string + 10 * " " + "\r", end="")
 
 def lookup(ip):
     # Sends json back in the following shape
@@ -29,8 +29,8 @@ def lookup(ip):
     #   "postal": "110001",
     #   "timezone": "Asia/Kolkata"
     # }
-    stat("Asking ipinfo.org ...") 
-    resp = req.get("http://ipinfo.org/{}".format(ip))
+    stat("Asking ipinfo.io for {} ...".format(ip)) 
+    resp = req.get("http://ipinfo.io/{}?token={}".format(ip, args.token))
     if resp.status_code != 200:
         print("'{}' is not a valid ip".format(ip), file=sys.stderr)
         sys.exit(0)
@@ -41,25 +41,28 @@ def lookup(ip):
 def plot(xy, name):
     # Transform xy ( "x,y" to (x, y) )
     splitted = xy.split(",")
-    xy = (float(splitted[0]), float(splitted[1]))
-    ax.annotate(name, xy=xy, color="red")
+    new = (float(splitted[0]), float(splitted[1]))
+    ax.annotate(name, xy=new, xycoords=transform,
+        ha="right", va="top", color="blue")
 
 parser = ArgumentParser()
 # Multiple IPs can be specified by seperating them with a \n (newline)
-parser.add_argument("ips", type=str, help="the IP addresses to look up", default=sys.stdin)
+parser.add_argument("--addr", type=str, help="the ip addresses to look up", default=sys.stdin)
+parser.add_argument("-t", "--token", type=str, help="the token to use with ipinfo.io", required=True)
 args = parser.parse_args()
 
 # Set up the map
 stat("Mapping ...")
 ax = plt.axes(projection=ccrs.Mercator())
+transform = ccrs.PlateCarree()._as_mpl_transform(ax)
 ax.add_feature(cf.COASTLINE)
 ax.set_title("Worl map")
 
-for ip in args.ips.split("\n"):
-    stat("Plotting ...")
-    plot(lookup(ip)["loc"], "!")
+ips = args.addr.read().split("\n") if args.addr == sys.stdin else args.addr.split("\n")
+
+stat("Plotting ...")
+for ip in ips:
+    plot(lookup(ip)["loc"], "●")
 
 stat("Saving map ...")
 plt.savefig("map.png")
-
-
